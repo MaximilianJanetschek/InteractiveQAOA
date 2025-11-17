@@ -46,4 +46,4 @@ The application uses a custom design system based on Qucun's style guide:
 
 ## API Integration
 
-All API calls are centralized in `src/api.ts` and use Axios. The Vite dev server proxies `/api` requests to `http://localhost:5000`.
+All API calls are centralized in `src/api.ts` and use Axios. The Vite dev server proxies `/api` requests to `http://localhost:5001`.

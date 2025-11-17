@@ -68,7 +68,7 @@ An interactive web application for building and simulating QAOA (Quantum Approxi
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    python app.py
    ```
-   The backend will run on `http://localhost:5000`
+   The backend will run on `http://localhost:5001`
 
 2. **Start the frontend development server** (in a new terminal):
    ```bash

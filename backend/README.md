@@ -17,7 +17,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-The API will be available at `http://localhost:5000`
+The API will be available at `http://localhost:5001`
 
 ## API Endpoints
 

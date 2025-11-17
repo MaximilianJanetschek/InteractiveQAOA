@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Custom Colors */
+    --black: 0 0% 0%;
+    --white: 0 0% 100%;
+    --blue: 245 100% 60%;
+    --light-blue: 210 100% 90%;
+    --dark-blue: 245 60% 20%;
+    --purple: 270 80% 60%;
+    --dark-purple: 270 50% 25%;
+    --light-purple: 270 80% 90%;
+    --teal: 180 80% 50%;
+    --light-orange: 30 100% 80%;
+    --grey: 0 0% 50%;
+    --red: 0 80% 60%;
+
+    /* Shadcn Colors */
+    --background: 245 60% 10%;
+    --foreground: 210 40% 98%;
+    --border: 245 30% 25%;
+    --input: 245 30% 25%;
+    --ring: 245 100% 60%;
+    --primary: 245 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 270 80% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 245 30% 20%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 270 80% 60%;
+    --accent-foreground: 0 0% 100%;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}

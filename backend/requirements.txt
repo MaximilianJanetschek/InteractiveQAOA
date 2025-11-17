@@ -1,0 +1,5 @@
+flask==3.0.0
+flask-cors==4.0.0
+qiskit==1.0.0
+qiskit-aer==0.13.3
+numpy==1.26.3

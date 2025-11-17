@@ -10,10 +10,13 @@ import { api } from './api';
 
 function App() {
   const [numQubits, setNumQubits] = useState(4);
+  const [numLayers, setNumLayers] = useState(1); // Number of QAOA layers (p)
   const [gates, setGates] = useState<Gate[]>([]);
   const [maxCutGraph, setMaxCutGraph] = useState<MaxCutGraph | null>(null);
   const [simulationResults, setSimulationResults] = useState<SimulationResult[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [globalBeta, setGlobalBeta] = useState(Math.PI / 4); // β for mixer
+  const [globalGamma, setGlobalGamma] = useState(Math.PI / 4); // γ for cost
 
   const handleAddGate = (gate: Gate) => {
     setGates([...gates, gate]);
@@ -58,14 +61,14 @@ function App() {
         mixerByPosition.get(gate.position)!.push(gate);
       });
 
-      // Add mixer operations
+      // Add mixer operations (use global beta parameter)
       Array.from(mixerByPosition.entries())
         .sort((a, b) => a[0] - b[0])
         .forEach(([_, gatesAtPosition]) => {
           operations.push({
             type: 'mixer',
             qubits: gatesAtPosition.map(g => g.qubitIndex),
-            parameter: gatesAtPosition[0].parameter || Math.PI / 4
+            parameter: globalBeta
           });
         });
 
@@ -80,7 +83,7 @@ function App() {
         costByPosition.get(gate.position)!.push(gate);
       });
 
-      // Add cost operations
+      // Add cost operations (use global gamma parameter)
       Array.from(costByPosition.entries())
         .sort((a, b) => a[0] - b[0])
         .forEach(([_, gatesAtPosition]) => {
@@ -88,9 +91,21 @@ function App() {
           operations.push({
             type: 'cost',
             edges: edges,
-            parameter: gatesAtPosition[0].parameter || Math.PI / 4
+            parameter: globalGamma
           });
         });
+
+      // Add individual ZZ gate operations (use global gamma parameter)
+      const zzGates = gates.filter(g => g.type === 'zz');
+      zzGates.forEach(gate => {
+        if (gate.targetQubit !== undefined && gate.targetQubit !== gate.qubitIndex) {
+          operations.push({
+            type: 'zz',
+            qubits: [gate.qubitIndex, gate.targetQubit],
+            parameter: globalGamma
+          });
+        }
+      });
 
       const result = await api.simulateCircuit(numQubits, operations, 1024);
 
@@ -107,6 +122,38 @@ function App() {
   const handleClear = () => {
     setGates([]);
     setSimulationResults([]);
+  };
+
+  const handleBuildLayers = () => {
+    // Automatically build p layers of alternating cost and mixer gates
+    const newGates: Gate[] = [];
+    let gateId = 0;
+
+    for (let layer = 0; layer < numLayers; layer++) {
+      // Add cost layer for all qubits
+      for (let q = 0; q < numQubits; q++) {
+        newGates.push({
+          id: `cost-${q}-${layer}-${gateId++}`,
+          type: 'cost',
+          qubitIndex: q,
+          position: layer * 2, // Even positions for cost
+          parameter: globalGamma
+        });
+      }
+
+      // Add mixer layer for all qubits
+      for (let q = 0; q < numQubits; q++) {
+        newGates.push({
+          id: `mixer-${q}-${layer}-${gateId++}`,
+          type: 'mixer',
+          qubitIndex: q,
+          position: layer * 2 + 1, // Odd positions for mixer
+          parameter: globalBeta
+        });
+      }
+    }
+
+    setGates(newGates);
   };
 
   const handleExport = () => {
@@ -146,7 +193,7 @@ function App() {
     return Array.from(layers.entries()).map(([position, qubits]) => ({
       position,
       qubits,
-      parameter: mixerGates.find(g => g.position === position)?.parameter || Math.PI / 4
+      parameter: globalBeta
     }));
   };
 
@@ -159,12 +206,20 @@ function App() {
         layers.set(gate.position, {
           position: gate.position,
           edges: maxCutGraph?.edges || [],
-          parameter: gate.parameter || Math.PI / 4
+          parameter: globalGamma
         });
       }
     });
 
     return Array.from(layers.values());
+  };
+
+  const getZZGates = () => {
+    return gates.filter(g => g.type === 'zz').map(gate => ({
+      qubit1: gate.qubitIndex,
+      qubit2: gate.targetQubit || 0,
+      parameter: globalGamma
+    }));
   };
 
   return (
@@ -191,7 +246,14 @@ function App() {
             {/* Control Panel */}
             <ControlPanel
               numQubits={numQubits}
+              numLayers={numLayers}
               onNumQubitsChange={setNumQubits}
+              onNumLayersChange={setNumLayers}
+              globalBeta={globalBeta}
+              globalGamma={globalGamma}
+              onBetaChange={setGlobalBeta}
+              onGammaChange={setGlobalGamma}
+              onBuildLayers={handleBuildLayers}
               onGenerateGraph={handleGenerateGraph}
               onSimulate={handleSimulate}
               onClear={handleClear}
@@ -217,6 +279,7 @@ function App() {
             <InfoPanel
               mixerLayers={getMixerLayers()}
               costLayers={getCostLayers()}
+              zzGates={getZZGates()}
               maxCutGraph={maxCutGraph}
               simulationResults={simulationResults}
             />

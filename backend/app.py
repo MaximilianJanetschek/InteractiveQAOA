@@ -56,6 +56,20 @@ class QAOACircuitBuilder:
         })
         return self
 
+    def add_zz_gate(self, gamma, qubit1, qubit2):
+        """Add a single ZZ gate between two qubits
+
+        Args:
+            gamma: Rotation parameter
+            qubit1: First qubit index
+            qubit2: Second qubit index
+        """
+        # Implement ZZ gate as CX-RZ-CX sequence
+        self.circuit.cx(qubit1, qubit2)
+        self.circuit.rz(2 * gamma, qubit2)
+        self.circuit.cx(qubit1, qubit2)
+        return self
+
     def get_circuit(self):
         """Return the built circuit"""
         return self.circuit
@@ -121,6 +135,12 @@ def build_circuit():
                 gamma = op.get('parameter', np.pi / 4)
                 builder.add_cost_layer(gamma, edges)
 
+            elif op_type == 'zz':
+                qubits = op.get('qubits', [])
+                gamma = op.get('parameter', np.pi / 4)
+                if len(qubits) >= 2:
+                    builder.add_zz_gate(gamma, qubits[0], qubits[1])
+
         circuit = builder.get_circuit()
 
         return jsonify({
@@ -159,6 +179,12 @@ def simulate_circuit():
                 edges = op.get('edges', [])
                 gamma = op.get('parameter', np.pi / 4)
                 builder.add_cost_layer(gamma, edges)
+
+            elif op_type == 'zz':
+                qubits = op.get('qubits', [])
+                gamma = op.get('parameter', np.pi / 4)
+                if len(qubits) >= 2:
+                    builder.add_zz_gate(gamma, qubits[0], qubits[1])
 
         circuit = builder.get_circuit()
         circuit.measure_all()

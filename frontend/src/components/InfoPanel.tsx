@@ -1,4 +1,6 @@
 import { MaxCutGraph, SimulationResult } from '../types';
+import ProbabilityHistogram from './ProbabilityHistogram';
+import GraphVisualization from './GraphVisualization';
 
 interface MixerLayer {
   position: number;
@@ -12,9 +14,16 @@ interface CostLayer {
   parameter: number;
 }
 
+interface ZZGate {
+  qubit1: number;
+  qubit2: number;
+  parameter: number;
+}
+
 interface InfoPanelProps {
   mixerLayers: MixerLayer[];
   costLayers: CostLayer[];
+  zzGates: ZZGate[];
   maxCutGraph: MaxCutGraph | null;
   simulationResults: SimulationResult[];
 }
@@ -22,6 +31,7 @@ interface InfoPanelProps {
 const InfoPanel = ({
   mixerLayers,
   costLayers,
+  zzGates,
   maxCutGraph,
   simulationResults
 }: InfoPanelProps) => {
@@ -29,32 +39,22 @@ const InfoPanel = ({
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-blue">Circuit Information</h2>
 
-      {/* Max-Cut Graph */}
-      <div className="bg-muted/50 rounded-md border border-border p-4">
-        <h3 className="text-sm font-bold text-purple mb-2">Max-Cut Graph</h3>
-        {maxCutGraph ? (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              Nodes: <span className="text-foreground">{maxCutGraph.num_nodes}</span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Edges: <span className="text-foreground">{maxCutGraph.edges.length}</span>
-            </p>
-            <div className="mt-2">
-              <p className="text-xs text-muted-foreground mb-1">Edge List:</p>
-              <div className="max-h-32 overflow-y-auto text-xs font-mono text-blue">
-                {maxCutGraph.edges.map((edge, i) => (
-                  <div key={i}>
-                    ({edge[0]}, {edge[1]})
-                  </div>
-                ))}
+      {/* Graph Visualization */}
+      {maxCutGraph && <GraphVisualization graph={maxCutGraph} />}
+
+      {/* Max-Cut Graph Edge List */}
+      {maxCutGraph && (
+        <div className="bg-muted/50 rounded-md border border-border p-4">
+          <h3 className="text-sm font-bold text-purple mb-2">Edge List</h3>
+          <div className="max-h-32 overflow-y-auto text-xs font-mono text-blue space-y-1">
+            {maxCutGraph.edges.map((edge, i) => (
+              <div key={i}>
+                ({edge[0]}, {edge[1]})
               </div>
-            </div>
+            ))}
           </div>
-        ) : (
-          <p className="text-xs text-muted-foreground">No graph generated yet</p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Mixer Layers */}
       <div className="bg-muted/50 rounded-md border border-border p-4">
@@ -104,19 +104,31 @@ const InfoPanel = ({
         )}
       </div>
 
-      {/* Simulation Results */}
-      {simulationResults.length > 0 && (
+      {/* Manual ZZ Gates */}
+      {zzGates.length > 0 && (
         <div className="bg-muted/50 rounded-md border border-border p-4">
-          <h3 className="text-sm font-bold text-teal mb-2">Simulation Results</h3>
-          <div className="space-y-1 max-h-64 overflow-y-auto">
-            {simulationResults.slice(0, 10).map((result, i) => (
-              <div key={i} className="flex justify-between text-xs">
-                <span className="font-mono text-blue">{result.state}</span>
-                <span className="text-muted-foreground">{result.count}</span>
+          <h3 className="text-sm font-bold text-light-orange mb-2">Manual ZZ Gates</h3>
+          <div className="space-y-1">
+            {zzGates.map((gate, i) => (
+              <div key={i} className="text-xs">
+                <p className="text-foreground font-mono">
+                  q[{gate.qubit1}] ↔ q[{gate.qubit2}]
+                </p>
               </div>
             ))}
+            <p className="text-xs text-muted-foreground mt-2">
+              γ = {zzGates[0]?.parameter.toFixed(3)}
+            </p>
           </div>
         </div>
+      )}
+
+      {/* Simulation Results with Histogram */}
+      {simulationResults.length > 0 && (
+        <ProbabilityHistogram
+          results={simulationResults}
+          totalShots={simulationResults.reduce((sum, r) => sum + r.count, 0)}
+        />
       )}
     </div>
   );

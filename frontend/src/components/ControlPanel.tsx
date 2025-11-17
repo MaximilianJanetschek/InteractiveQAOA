@@ -1,7 +1,14 @@
 interface ControlPanelProps {
   numQubits: number;
+  numLayers: number;
   onNumQubitsChange: (num: number) => void;
+  onNumLayersChange: (num: number) => void;
+  globalBeta: number;
+  globalGamma: number;
+  onBetaChange: (beta: number) => void;
+  onGammaChange: (gamma: number) => void;
   onGenerateGraph: () => void;
+  onBuildLayers: () => void;
   onSimulate: () => void;
   onClear: () => void;
   onExport: () => void;
@@ -11,8 +18,15 @@ interface ControlPanelProps {
 
 const ControlPanel = ({
   numQubits,
+  numLayers,
   onNumQubitsChange,
+  onNumLayersChange,
+  globalBeta,
+  globalGamma,
+  onBetaChange,
+  onGammaChange,
   onGenerateGraph,
+  onBuildLayers,
   onSimulate,
   onClear,
   onExport,
@@ -21,7 +35,7 @@ const ControlPanel = ({
 }: ControlPanelProps) => {
   return (
     <div className="bg-muted/30 backdrop-blur-sm border-b border-border px-6 py-4">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         {/* Number of Qubits */}
         <div className="flex items-center gap-2">
           <label className="text-sm text-foreground">Qubits:</label>
@@ -35,12 +49,61 @@ const ControlPanel = ({
           />
         </div>
 
+        {/* Number of Layers */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-foreground">Layers (p):</label>
+          <input
+            type="number"
+            min="1"
+            max="5"
+            value={numLayers}
+            onChange={(e) => onNumLayersChange(parseInt(e.target.value))}
+            className="w-16 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
+          />
+        </div>
+
+        {/* Beta Parameter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-purple">β (mixer):</label>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max={2 * Math.PI}
+            value={globalBeta.toFixed(3)}
+            onChange={(e) => onBetaChange(parseFloat(e.target.value))}
+            className="w-20 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
+          />
+        </div>
+
+        {/* Gamma Parameter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-teal">γ (cost):</label>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max={2 * Math.PI}
+            value={globalGamma.toFixed(3)}
+            onChange={(e) => onGammaChange(parseFloat(e.target.value))}
+            className="w-20 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
+          />
+        </div>
+
         {/* Generate Graph Button */}
         <button
           onClick={onGenerateGraph}
           className="px-4 py-2 bg-blue hover:opacity-80 text-white rounded-sm text-sm font-medium transition-opacity"
         >
           Generate Graph
+        </button>
+
+        {/* Build Layers Button */}
+        <button
+          onClick={onBuildLayers}
+          className="px-4 py-2 bg-purple hover:opacity-80 text-white rounded-sm text-sm font-medium transition-opacity"
+        >
+          Build {numLayers} Layer{numLayers > 1 ? 's' : ''}
         </button>
 
         {/* Simulate Button */}

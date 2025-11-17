@@ -5,6 +5,7 @@ import CircuitCanvas from './components/CircuitCanvas';
 import GateToolbox from './components/GateToolbox';
 import InfoPanel from './components/InfoPanel';
 import ControlPanel from './components/ControlPanel';
+import ProbabilityHistogram from './components/ProbabilityHistogram';
 import { Gate, CircuitOperation, SimulationResult, MaxCutGraph } from './types';
 import { api } from './api';
 
@@ -271,6 +272,16 @@ function App() {
                 onRemoveGate={handleRemoveGate}
                 onUpdateGate={handleUpdateGate}
               />
+
+              {/* Probability Histogram underneath circuit */}
+              {simulationResults.length > 0 && (
+                <div className="mt-6">
+                  <ProbabilityHistogram
+                    results={simulationResults}
+                    totalShots={simulationResults.reduce((sum, r) => sum + r.count, 0)}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -281,7 +292,6 @@ function App() {
               costLayers={getCostLayers()}
               zzGates={getZZGates()}
               maxCutGraph={maxCutGraph}
-              simulationResults={simulationResults}
             />
           </div>
         </div>

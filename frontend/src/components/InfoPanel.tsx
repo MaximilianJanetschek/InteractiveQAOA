@@ -1,5 +1,4 @@
-import { MaxCutGraph, SimulationResult } from '../types';
-import ProbabilityHistogram from './ProbabilityHistogram';
+import { MaxCutGraph } from '../types';
 import GraphVisualization from './GraphVisualization';
 
 interface MixerLayer {
@@ -25,15 +24,13 @@ interface InfoPanelProps {
   costLayers: CostLayer[];
   zzGates: ZZGate[];
   maxCutGraph: MaxCutGraph | null;
-  simulationResults: SimulationResult[];
 }
 
 const InfoPanel = ({
   mixerLayers,
   costLayers,
   zzGates,
-  maxCutGraph,
-  simulationResults
+  maxCutGraph
 }: InfoPanelProps) => {
   return (
     <div className="space-y-6">
@@ -121,14 +118,6 @@ const InfoPanel = ({
             </p>
           </div>
         </div>
-      )}
-
-      {/* Simulation Results with Histogram */}
-      {simulationResults.length > 0 && (
-        <ProbabilityHistogram
-          results={simulationResults}
-          totalShots={simulationResults.reduce((sum, r) => sum + r.count, 0)}
-        />
       )}
     </div>
   );

@@ -18,8 +18,8 @@ const QubitLine = ({
   onUpdateGate
 }: QubitLineProps) => {
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: ['mixer', 'cost'],
-    drop: (item: { type: 'mixer' | 'cost' }, monitor) => {
+    accept: ['mixer', 'cost', 'zz'],
+    drop: (item: { type: 'mixer' | 'cost' | 'zz' }, monitor) => {
       const offset = monitor.getClientOffset();
       if (offset) {
         // Calculate position along the line
@@ -30,7 +30,8 @@ const QubitLine = ({
           type: item.type,
           qubitIndex,
           position,
-          parameter: Math.PI / 4
+          parameter: Math.PI / 4,
+          targetQubit: item.type === 'zz' ? (qubitIndex + 1) % 8 : undefined
         };
 
         onAddGate(newGate);

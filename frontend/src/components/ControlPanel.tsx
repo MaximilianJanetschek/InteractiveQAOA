@@ -1,6 +1,10 @@
 interface ControlPanelProps {
   numQubits: number;
   onNumQubitsChange: (num: number) => void;
+  globalBeta: number;
+  globalGamma: number;
+  onBetaChange: (beta: number) => void;
+  onGammaChange: (gamma: number) => void;
   onGenerateGraph: () => void;
   onSimulate: () => void;
   onClear: () => void;
@@ -12,6 +16,10 @@ interface ControlPanelProps {
 const ControlPanel = ({
   numQubits,
   onNumQubitsChange,
+  globalBeta,
+  globalGamma,
+  onBetaChange,
+  onGammaChange,
   onGenerateGraph,
   onSimulate,
   onClear,
@@ -21,7 +29,7 @@ const ControlPanel = ({
 }: ControlPanelProps) => {
   return (
     <div className="bg-muted/30 backdrop-blur-sm border-b border-border px-6 py-4">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         {/* Number of Qubits */}
         <div className="flex items-center gap-2">
           <label className="text-sm text-foreground">Qubits:</label>
@@ -32,6 +40,34 @@ const ControlPanel = ({
             value={numQubits}
             onChange={(e) => onNumQubitsChange(parseInt(e.target.value))}
             className="w-16 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
+          />
+        </div>
+
+        {/* Beta Parameter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-purple">β (mixer):</label>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max={2 * Math.PI}
+            value={globalBeta.toFixed(3)}
+            onChange={(e) => onBetaChange(parseFloat(e.target.value))}
+            className="w-20 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
+          />
+        </div>
+
+        {/* Gamma Parameter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-teal">γ (cost):</label>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max={2 * Math.PI}
+            value={globalGamma.toFixed(3)}
+            onChange={(e) => onGammaChange(parseFloat(e.target.value))}
+            className="w-20 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
           />
         </div>
 

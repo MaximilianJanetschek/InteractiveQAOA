@@ -12,9 +12,16 @@ interface CostLayer {
   parameter: number;
 }
 
+interface ZZGate {
+  qubit1: number;
+  qubit2: number;
+  parameter: number;
+}
+
 interface InfoPanelProps {
   mixerLayers: MixerLayer[];
   costLayers: CostLayer[];
+  zzGates: ZZGate[];
   maxCutGraph: MaxCutGraph | null;
   simulationResults: SimulationResult[];
 }
@@ -22,6 +29,7 @@ interface InfoPanelProps {
 const InfoPanel = ({
   mixerLayers,
   costLayers,
+  zzGates,
   maxCutGraph,
   simulationResults
 }: InfoPanelProps) => {
@@ -103,6 +111,25 @@ const InfoPanel = ({
           <p className="text-xs text-muted-foreground">No cost layers added</p>
         )}
       </div>
+
+      {/* Manual ZZ Gates */}
+      {zzGates.length > 0 && (
+        <div className="bg-muted/50 rounded-md border border-border p-4">
+          <h3 className="text-sm font-bold text-light-orange mb-2">Manual ZZ Gates</h3>
+          <div className="space-y-1">
+            {zzGates.map((gate, i) => (
+              <div key={i} className="text-xs">
+                <p className="text-foreground font-mono">
+                  q[{gate.qubit1}] ↔ q[{gate.qubit2}]
+                </p>
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground mt-2">
+              γ = {zzGates[0]?.parameter.toFixed(3)}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Simulation Results */}
       {simulationResults.length > 0 && (

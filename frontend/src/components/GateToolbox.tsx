@@ -52,15 +52,29 @@ const GateToolbox = () => {
             Applies ZZ interactions based on graph edges
           </p>
         </div>
+
+        {/* ZZ Gate */}
+        <div>
+          <h3 className="text-sm text-muted-foreground mb-2">Manual ZZ Gate</h3>
+          <DraggableGate
+            type="zz"
+            label="ZZ Gate"
+            color="bg-light-orange"
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            Controlled ZZ interaction between two qubits
+          </p>
+        </div>
       </div>
 
       {/* Instructions */}
       <div className="mt-8 p-4 bg-muted/30 rounded-md border border-border">
         <h3 className="text-sm font-bold text-blue mb-2">Instructions</h3>
         <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-          <li>Generate a Max-Cut graph</li>
+          <li>Set β and γ parameters at the top</li>
+          <li>Generate a Max-Cut graph (optional)</li>
           <li>Drag gates onto qubit lines</li>
-          <li>Click gates to adjust parameters</li>
+          <li>For ZZ gates, click to set target qubit</li>
           <li>Run simulation to see results</li>
         </ol>
       </div>

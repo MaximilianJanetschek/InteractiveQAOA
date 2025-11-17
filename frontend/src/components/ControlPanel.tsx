@@ -1,11 +1,14 @@
 interface ControlPanelProps {
   numQubits: number;
+  numLayers: number;
   onNumQubitsChange: (num: number) => void;
+  onNumLayersChange: (num: number) => void;
   globalBeta: number;
   globalGamma: number;
   onBetaChange: (beta: number) => void;
   onGammaChange: (gamma: number) => void;
   onGenerateGraph: () => void;
+  onBuildLayers: () => void;
   onSimulate: () => void;
   onClear: () => void;
   onExport: () => void;
@@ -15,12 +18,15 @@ interface ControlPanelProps {
 
 const ControlPanel = ({
   numQubits,
+  numLayers,
   onNumQubitsChange,
+  onNumLayersChange,
   globalBeta,
   globalGamma,
   onBetaChange,
   onGammaChange,
   onGenerateGraph,
+  onBuildLayers,
   onSimulate,
   onClear,
   onExport,
@@ -39,6 +45,19 @@ const ControlPanel = ({
             max="8"
             value={numQubits}
             onChange={(e) => onNumQubitsChange(parseInt(e.target.value))}
+            className="w-16 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
+          />
+        </div>
+
+        {/* Number of Layers */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-foreground">Layers (p):</label>
+          <input
+            type="number"
+            min="1"
+            max="5"
+            value={numLayers}
+            onChange={(e) => onNumLayersChange(parseInt(e.target.value))}
             className="w-16 px-2 py-1 bg-input border border-border rounded-2xs text-foreground text-sm"
           />
         </div>
@@ -77,6 +96,14 @@ const ControlPanel = ({
           className="px-4 py-2 bg-blue hover:opacity-80 text-white rounded-sm text-sm font-medium transition-opacity"
         >
           Generate Graph
+        </button>
+
+        {/* Build Layers Button */}
+        <button
+          onClick={onBuildLayers}
+          className="px-4 py-2 bg-purple hover:opacity-80 text-white rounded-sm text-sm font-medium transition-opacity"
+        >
+          Build {numLayers} Layer{numLayers > 1 ? 's' : ''}
         </button>
 
         {/* Simulate Button */}

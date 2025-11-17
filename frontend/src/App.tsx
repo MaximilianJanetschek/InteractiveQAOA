@@ -10,6 +10,7 @@ import { api } from './api';
 
 function App() {
   const [numQubits, setNumQubits] = useState(4);
+  const [numLayers, setNumLayers] = useState(1); // Number of QAOA layers (p)
   const [gates, setGates] = useState<Gate[]>([]);
   const [maxCutGraph, setMaxCutGraph] = useState<MaxCutGraph | null>(null);
   const [simulationResults, setSimulationResults] = useState<SimulationResult[]>([]);
@@ -123,6 +124,38 @@ function App() {
     setSimulationResults([]);
   };
 
+  const handleBuildLayers = () => {
+    // Automatically build p layers of alternating cost and mixer gates
+    const newGates: Gate[] = [];
+    let gateId = 0;
+
+    for (let layer = 0; layer < numLayers; layer++) {
+      // Add cost layer for all qubits
+      for (let q = 0; q < numQubits; q++) {
+        newGates.push({
+          id: `cost-${q}-${layer}-${gateId++}`,
+          type: 'cost',
+          qubitIndex: q,
+          position: layer * 2, // Even positions for cost
+          parameter: globalGamma
+        });
+      }
+
+      // Add mixer layer for all qubits
+      for (let q = 0; q < numQubits; q++) {
+        newGates.push({
+          id: `mixer-${q}-${layer}-${gateId++}`,
+          type: 'mixer',
+          qubitIndex: q,
+          position: layer * 2 + 1, // Odd positions for mixer
+          parameter: globalBeta
+        });
+      }
+    }
+
+    setGates(newGates);
+  };
+
   const handleExport = () => {
     const exportData = {
       numQubits,
@@ -213,11 +246,14 @@ function App() {
             {/* Control Panel */}
             <ControlPanel
               numQubits={numQubits}
+              numLayers={numLayers}
               onNumQubitsChange={setNumQubits}
+              onNumLayersChange={setNumLayers}
               globalBeta={globalBeta}
               globalGamma={globalGamma}
               onBetaChange={setGlobalBeta}
               onGammaChange={setGlobalGamma}
+              onBuildLayers={handleBuildLayers}
               onGenerateGraph={handleGenerateGraph}
               onSimulate={handleSimulate}
               onClear={handleClear}

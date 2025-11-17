@@ -41,13 +41,18 @@ class QAOACircuitBuilder:
     def add_cost_layer(self, gamma, edges):
         """Add cost Hamiltonian layer for Max-Cut problem
 
+        For Max-Cut, the cost Hamiltonian is H_C = -Σ_{(i,j)∈E} Z_i Z_j
+        We apply U_C(γ) = e^(-i γ H_C) = e^(i γ Σ Z_i Z_j)
+        For each edge, this is e^(i γ Z_i Z_j) = RZZ(-2γ)
+
         Args:
             gamma: Cost parameter
             edges: List of tuples representing edges [(q0, q1), (q1, q2), ...]
         """
         for q0, q1 in edges:
+            # Apply RZZ(-2γ) = e^(i γ Z_i Z_j) for Max-Cut
             self.circuit.cx(q0, q1)
-            self.circuit.rz(2 * gamma, q1)
+            self.circuit.rz(-2 * gamma, q1)  # Negative sign for Max-Cut
             self.circuit.cx(q0, q1)
 
         self.cost_layers.append({
@@ -59,14 +64,16 @@ class QAOACircuitBuilder:
     def add_zz_gate(self, gamma, qubit1, qubit2):
         """Add a single ZZ gate between two qubits
 
+        Uses the same convention as cost layer for Max-Cut: e^(i γ Z_i Z_j)
+
         Args:
             gamma: Rotation parameter
             qubit1: First qubit index
             qubit2: Second qubit index
         """
-        # Implement ZZ gate as CX-RZ-CX sequence
+        # Apply RZZ(-2γ) = e^(i γ Z_i Z_j) for Max-Cut consistency
         self.circuit.cx(qubit1, qubit2)
-        self.circuit.rz(2 * gamma, qubit2)
+        self.circuit.rz(-2 * gamma, qubit2)  # Negative sign for Max-Cut
         self.circuit.cx(qubit1, qubit2)
         return self
 

@@ -161,6 +161,30 @@ def build_circuit():
             'error': str(e)
         }), 400
 
+def calculate_maxcut_objective(bitstring, edges):
+    """Calculate the Max-Cut objective value for a given bitstring
+
+    The objective is the number of edges cut, i.e., edges where the two
+    vertices are in different partitions.
+
+    Args:
+        bitstring: Binary string representing the partition (e.g., "0101")
+        edges: List of edges [(q0, q1), ...]
+
+    Returns:
+        int: Number of edges cut
+    """
+    if not edges:
+        return 0
+
+    cuts = 0
+    for q0, q1 in edges:
+        # Check if qubits are in different partitions
+        if bitstring[q0] != bitstring[q1]:
+            cuts += 1
+
+    return cuts
+
 @app.route('/api/circuit/simulate', methods=['POST'])
 def simulate_circuit():
     """Simulate a QAOA circuit and return results"""
@@ -172,6 +196,9 @@ def simulate_circuit():
     try:
         builder = QAOACircuitBuilder(num_qubits)
         builder.add_hadamard_layer()
+
+        # Collect all edges from the operations
+        all_edges = []
 
         # Process operations
         for op in operations:
@@ -186,12 +213,20 @@ def simulate_circuit():
                 edges = op.get('edges', [])
                 gamma = op.get('parameter', np.pi / 4)
                 builder.add_cost_layer(gamma, edges)
+                # Collect edges for objective calculation
+                for edge in edges:
+                    if edge not in all_edges:
+                        all_edges.append(edge)
 
             elif op_type == 'zz':
                 qubits = op.get('qubits', [])
                 gamma = op.get('parameter', np.pi / 4)
                 if len(qubits) >= 2:
                     builder.add_zz_gate(gamma, qubits[0], qubits[1])
+                    # Add manual ZZ gates as edges too
+                    edge = [qubits[0], qubits[1]]
+                    if edge not in all_edges:
+                        all_edges.append(edge)
 
         circuit = builder.get_circuit()
         circuit.measure_all()
@@ -202,8 +237,18 @@ def simulate_circuit():
         result = job.result()
         counts = result.get_counts()
 
-        # Convert counts to serializable format
-        counts_list = [{'state': state, 'count': count} for state, count in counts.items()]
+        # Convert counts to serializable format with objective values
+        counts_list = []
+        for state, count in counts.items():
+            # Reverse the bitstring (Qiskit uses little-endian)
+            reversed_state = state[::-1]
+            objective_value = calculate_maxcut_objective(reversed_state, all_edges)
+            counts_list.append({
+                'state': state,
+                'count': count,
+                'objective_value': objective_value
+            })
+
         counts_list.sort(key=lambda x: x['count'], reverse=True)
 
         return jsonify({

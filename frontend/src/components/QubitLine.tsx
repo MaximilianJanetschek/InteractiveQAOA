@@ -68,33 +68,38 @@ const QubitLine = ({
         </div>
 
         {/* Gates */}
-        <div className="flex items-center h-full gap-2 pl-8">
-          {/* Initial Hadamard Gate */}
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-purple/20 border-2 border-purple rounded flex items-center justify-center">
-              <span className="text-purple font-bold text-sm">H</span>
+        <div className="flex items-center h-full pl-8">
+          {/* Initial Hadamard Gate Layer */}
+          <div className="flex items-center h-full">
+            <div className="w-16 flex items-center justify-center">
+              <div className="w-10 h-10 bg-purple/20 border-2 border-purple rounded flex items-center justify-center">
+                <span className="text-purple font-bold text-sm">H</span>
+              </div>
             </div>
             {positions.length > 0 && (
-              <div className="w-px h-12 bg-border/50" />
+              <div className="w-0.5 h-16 bg-border mx-2" />
             )}
           </div>
 
-          {/* User-added gates grouped by position */}
+          {/* User-added gates grouped by position with fixed-width layers */}
           {positions.map((position, posIdx) => {
             const gatesAtPosition = sortedGates.filter(g => g.position === position);
             return (
-              <div key={position} className="flex items-center gap-2">
-                {gatesAtPosition.map((gate) => (
-                  <GateComponent
-                    key={gate.id}
-                    gate={gate}
-                    onRemove={() => onRemoveGate(gate.id)}
-                    onUpdate={(updates) => onUpdateGate(gate.id, updates)}
-                  />
-                ))}
-                {/* Add divider after each position except the last */}
+              <div key={position} className="flex items-center h-full">
+                {/* Fixed-width layer container */}
+                <div className="min-w-[120px] flex items-center justify-start gap-2 px-2">
+                  {gatesAtPosition.map((gate) => (
+                    <GateComponent
+                      key={gate.id}
+                      gate={gate}
+                      onRemove={() => onRemoveGate(gate.id)}
+                      onUpdate={(updates) => onUpdateGate(gate.id, updates)}
+                    />
+                  ))}
+                </div>
+                {/* Prominent divider after each layer */}
                 {posIdx < positions.length - 1 && (
-                  <div className="w-px h-12 bg-border/50 mx-1" />
+                  <div className="w-0.5 h-16 bg-border mx-2" />
                 )}
               </div>
             );

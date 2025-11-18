@@ -48,62 +48,62 @@ function App() {
   const handleSimulate = async () => {
     setIsSimulating(true);
     try {
-      // Convert gates to operations
+      // Convert gates to operations, properly ordered by position
       const operations: CircuitOperation[] = [];
 
-      // Group mixer gates by position
-      const mixerGates = gates.filter(g => g.type === 'mixer');
-      const mixerByPosition = new Map<number, Gate[]>();
+      // Group ALL gates by position to ensure proper layering
+      const gatesByPosition = new Map<number, { mixer: Gate[], cost: Gate[], zz: Gate[] }>();
 
-      mixerGates.forEach(gate => {
-        if (!mixerByPosition.has(gate.position)) {
-          mixerByPosition.set(gate.position, []);
+      gates.forEach(gate => {
+        if (!gatesByPosition.has(gate.position)) {
+          gatesByPosition.set(gate.position, { mixer: [], cost: [], zz: [] });
         }
-        mixerByPosition.get(gate.position)!.push(gate);
+        const posGroup = gatesByPosition.get(gate.position)!;
+
+        if (gate.type === 'mixer') {
+          posGroup.mixer.push(gate);
+        } else if (gate.type === 'cost') {
+          posGroup.cost.push(gate);
+        } else if (gate.type === 'zz') {
+          posGroup.zz.push(gate);
+        }
       });
 
-      // Add mixer operations (use global beta parameter)
-      Array.from(mixerByPosition.entries())
-        .sort((a, b) => a[0] - b[0])
-        .forEach(([_, gatesAtPosition]) => {
+      // Sort positions and add operations in correct order
+      const sortedPositions = Array.from(gatesByPosition.keys()).sort((a, b) => a - b);
+
+      sortedPositions.forEach(position => {
+        const posGroup = gatesByPosition.get(position)!;
+
+        // Add cost operations for this position (if any)
+        if (posGroup.cost.length > 0) {
+          const edges = maxCutGraph?.edges || [];
+          if (edges.length > 0) {
+            operations.push({
+              type: 'cost',
+              edges: edges,
+              parameter: globalGamma
+            });
+          }
+        }
+
+        // Add manual ZZ gates for this position (if any)
+        posGroup.zz.forEach(gate => {
+          if (gate.targetQubit !== undefined && gate.targetQubit !== gate.qubitIndex) {
+            operations.push({
+              type: 'zz',
+              qubits: [gate.qubitIndex, gate.targetQubit],
+              parameter: globalGamma
+            });
+          }
+        });
+
+        // Add mixer operations for this position (if any)
+        if (posGroup.mixer.length > 0) {
           operations.push({
             type: 'mixer',
-            qubits: gatesAtPosition.map(g => g.qubitIndex),
+            qubits: posGroup.mixer.map(g => g.qubitIndex),
             parameter: globalBeta
-          });
-        });
-
-      // Group cost gates by position
-      const costGates = gates.filter(g => g.type === 'cost');
-      const costByPosition = new Map<number, Gate[]>();
-
-      costGates.forEach(gate => {
-        if (!costByPosition.has(gate.position)) {
-          costByPosition.set(gate.position, []);
-        }
-        costByPosition.get(gate.position)!.push(gate);
-      });
-
-      // Add cost operations (use global gamma parameter)
-      Array.from(costByPosition.entries())
-        .sort((a, b) => a[0] - b[0])
-        .forEach(([_, gatesAtPosition]) => {
-          const edges = maxCutGraph?.edges || [];
-          operations.push({
-            type: 'cost',
-            edges: edges,
-            parameter: globalGamma
-          });
-        });
-
-      // Add individual ZZ gate operations (use global gamma parameter)
-      const zzGates = gates.filter(g => g.type === 'zz');
-      zzGates.forEach(gate => {
-        if (gate.targetQubit !== undefined && gate.targetQubit !== gate.qubitIndex) {
-          operations.push({
-            type: 'zz',
-            qubits: [gate.qubitIndex, gate.targetQubit],
-            parameter: globalGamma
           });
         }
       });

@@ -33,6 +33,7 @@ export interface CircuitInfo {
 export interface SimulationResult {
   state: string;
   count: number;
+  objective_value: number;
 }
 
 export interface MaxCutGraph {
